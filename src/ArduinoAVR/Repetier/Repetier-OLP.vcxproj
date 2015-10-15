@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{205F3D3C-7ABE-4B8B-8E9B-EA26332B689C}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Commands.cpp" />
+    <ClCompile Include="Communication.cpp" />
+    <ClCompile Include="cores\CDC.cpp" />
+    <ClCompile Include="cores\HardwareSerial.cpp" />
+    <ClCompile Include="cores\IPAddress.cpp" />
+    <ClCompile Include="cores\main.cpp" />
+    <ClCompile Include="cores\new.cpp" />
+    <ClCompile Include="cores\Print.cpp" />
+    <ClCompile Include="cores\Stream.cpp" />
+    <ClCompile Include="cores\Tone.cpp" />
+    <ClCompile Include="cores\USBCore.cpp" />
+    <ClCompile Include="cores\WInterrupts.c" />
+    <ClCompile Include="cores\wiring.c" />
+    <ClCompile Include="cores\wiring_analog.c" />
+    <ClCompile Include="cores\wiring_digital.c" />
+    <ClCompile Include="cores\wiring_pulse.c" />
+    <ClCompile Include="cores\wiring_shift.c" />
+    <ClCompile Include="cores\WMath.cpp" />
+    <ClCompile Include="cores\WString.cpp" />
+    <ClCompile Include="Drivers.cpp" />
+    <ClCompile Include="Eeprom.cpp" />
+    <ClCompile Include="Extruder.cpp" />
+    <ClCompile Include="gcode.cpp" />
+    <ClCompile Include="HAL.cpp" />
+    <ClCompile Include="libraries\EEPROM.cpp" />
+    <ClCompile Include="libraries\Ethernet.cpp" />
+    <ClCompile Include="libraries\Firmata.cpp" />
+    <ClCompile Include="libraries\LiquidCrystal.cpp" />
+    <ClCompile Include="libraries\OBD.cpp" />
+    <ClCompile Include="libraries\SD.cpp" />
+    <ClCompile Include="libraries\Servo.cpp" />
+    <ClCompile Include="libraries\SoftwareSerial.cpp" />
+    <ClCompile Include="libraries\SPI.cpp" />
+    <ClCompile Include="libraries\Stepper.cpp" />
+    <ClCompile Include="libraries\TinyGPS.cpp" />
+    <ClCompile Include="libraries\twi.c" />
+    <ClCompile Include="libraries\U8gui.cpp" />
+    <ClCompile Include="libraries\WiFi.cpp" />
+    <ClCompile Include="libraries\Wire.cpp" />
+    <ClCompile Include="motion.cpp" />
+    <ClCompile Include="Printer.cpp" />
+    <ClCompile Include="SDCard.cpp" />
+    <ClCompile Include="SdFat.cpp" />
+    <ClCompile Include="ui.cpp" />
+    <ClCompile Include="uilang.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Commands.h" />
+    <ClInclude Include="Communication.h" />
+    <ClInclude Include="Configuration.h" />
+    <ClInclude Include="Drivers.h" />
+    <ClInclude Include="Eeprom.h" />
+    <ClInclude Include="Events.h" />
+    <ClInclude Include="Extruder.h" />
+    <ClInclude Include="fastio.h" />
+    <ClInclude Include="FatStructs.h" />
+    <ClInclude Include="gameduino2.h" />
+    <ClInclude Include="gcode.h" />
+    <ClInclude Include="gd2_ext.h" />
+    <ClInclude Include="HAL.h" />
+    <ClInclude Include="logo.h" />
+    <ClInclude Include="motion.h" />
+    <ClInclude Include="pins.h" />
+    <ClInclude Include="Printer.h" />
+    <ClInclude Include="Repetier.h" />
+    <ClInclude Include="SdFat.h" />
+    <ClInclude Include="u8glib_ex.h" />
+    <ClInclude Include="ui.h" />
+    <ClInclude Include="uiconfig.h" />
+    <ClInclude Include="uilang.h" />
+    <ClInclude Include="uimenu.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Repetier.ino" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
