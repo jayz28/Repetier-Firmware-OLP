@@ -304,7 +304,7 @@ void PrintLine::calculateMove(float axis_diff[], uint8_t pathOptimize)
     limitInterval = RMath::max(axisInterval[VIRTUAL_AXIS], limitInterval);
 #endif
 
-    fullInterval = limitInterval = limitInterval>LIMIT_INTERVAL ? limitInterval : LIMIT_INTERVAL; // This is our target speed
+    fullInterval = limitInterval = limitInterval > LIMIT_INTERVAL ? limitInterval : LIMIT_INTERVAL; // This is our target speed
     // new time at full speed = limitInterval*p->stepsRemaining [ticks]
     timeForMove = (float)limitInterval * (float)stepsRemaining; // for large z-distance this overflows with long computation
     float inv_time_s = (float)F_CPU / timeForMove;
@@ -345,14 +345,32 @@ void PrintLine::calculateMove(float axis_diff[], uint8_t pathOptimize)
     // slowest time to accelerate from v0 to limitInterval determines used acceleration
     // t = (v_end-v_start)/a
     float slowest_axis_plateau_time_repro = 1e15; // repro to reduce division Unit: 1/s
-    unsigned long *accel = (isEPositiveMove() ?  Printer::maxPrintAccelerationStepsPerSquareSecond : Printer::maxTravelAccelerationStepsPerSquareSecond);
-
+    uint32_t *accel = (isEPositiveMove() ?  Printer::maxPrintAccelerationStepsPerSquareSecond : Printer::maxTravelAccelerationStepsPerSquareSecond);
+#if defined(INTERPOLATE_ACCELERATION_WITH_Z) && INTERPOLATE_ACCELERATION_WITH_Z != 0
+    uint32_t newAccel[4];
+    float accelFac = 100.0 + (EEPROM::accelarationFactorTop() - 100.0) * Printer::currentPosition[Z_AXIS] / Printer::zLength;
+#if INTERPOLATE_ACCELERATION_WITH_Z == 1 || INTERPOLATE_ACCELERATION_WITH_Z == 3
+    newAccel[X_AXIS] = static_cast<int32_t>(accel[X_AXIS] * accelFac) / 100;
+    newAccel[Y_AXIS] = static_cast<int32_t>(accel[Y_AXIS] * accelFac) / 100;
+#else
+    newAccel[X_AXIS] = accel[X_AXIS];
+    newAccel[Y_AXIS] = accel[Y_AXIS];
+#endif
+#if INTERPOLATE_ACCELERATION_WITH_Z == 2 || INTERPOLATE_ACCELERATION_WITH_Z == 3
+    newAccel[Z_AXIS] = static_cast<int32_t>(accel[Z_AXIS] * accelFac) / 100;
+#else
+    newAccel[Z_AXIS] = accel[Z_AXIS];
+#endif
+    newAccel[E_AXIS] = accel[E_AXIS];
+    accel = newAccel;
+#endif
     for(uint8_t i = 0; i < 4 ; i++)
     {
         if(isMoveOfAxis(i))
             // v = a * t => t = v/a = F_CPU/(c*a) => 1/t = c*a/F_CPU
             slowest_axis_plateau_time_repro = RMath::min(slowest_axis_plateau_time_repro, (float)axisInterval[i] * (float)accel[i]); //  steps/s^2 * step/tick  Ticks/s^2
     }
+
     // Errors for delta move are initialized in timer (except extruder)
 #if !NONLINEAR_SYSTEM
     error[X_AXIS] = error[Y_AXIS] = error[Z_AXIS] = delta[primaryAxis] >> 1;
@@ -1875,7 +1893,7 @@ int32_t PrintLine::bresenhamStep() // Version for delta printer
             //HAL::forbidInterrupts();
             //deltaSegmentCount -= cur->numDeltaSegments; // should always be zero
             removeCurrentLineForbidInterrupt();
-            if(linesCount == 0) UI_STATUS(UI_TEXT_IDLE);
+            if(linesCount == 0) UI_STATUS_F(Com::translatedF(UI_TEXT_IDLE_ID));
             return 1000;
         }
 #endif
@@ -1901,7 +1919,7 @@ int32_t PrintLine::bresenhamStep() // Version for delta printer
         if(Printer::isZProbingActive() && Printer::stepsRemainingAtZHit >= 0)
         {
             removeCurrentLineForbidInterrupt();
-            if(linesCount == 0) UI_STATUS(UI_TEXT_IDLE);
+            if(linesCount == 0) UI_STATUS_F(Com::translatedF(UI_TEXT_IDLE_ID));
             return 1000;
         }
 #endif
@@ -2035,6 +2053,15 @@ int32_t PrintLine::bresenhamStep() // Version for delta printer
             {
                 if (cur->numDeltaSegments)
                 {
+                    if(FEATURE_BABYSTEPPING && Printer::zBabystepsMissing/* && curd
+                            && (curd->dir & XYZ_STEP) == XYZ_STEP*/)
+                    {
+                        // execute a extra babystep
+                        //Printer::insertStepperHighDelay();
+                        //Printer::endXYZSteps();
+                        //HAL::delayMicroseconds(STEPPER_HIGH_DELAY + DOUBLE_STEP_DELAY + 1);
+                        Printer::zBabystep();
+                    }
                     // Get the next delta segment
                     curd = &cur->segments[--cur->numDeltaSegments];
 
@@ -2053,49 +2080,6 @@ int32_t PrintLine::bresenhamStep() // Version for delta printer
                     HAL::delayMicroseconds(DIRECTION_DELAY);
 #endif
 
-                    if(FEATURE_BABYSTEPPING && Printer::zBabystepsMissing/* && curd
-                            && (curd->dir & XYZ_STEP) == XYZ_STEP*/)
-                    {
-                        // execute a extra babystep
-                        Printer::insertStepperHighDelay();
-                        Printer::endXYZSteps();
-                        HAL::delayMicroseconds(STEPPER_HIGH_DELAY + DOUBLE_STEP_DELAY + 1);
-                        Printer::zBabystep();
-                       /* if(Printer::zBabystepsMissing > 0)
-                        {
-                            if(curd->dir & X_DIRPOS)
-                                cur->startXStep();
-                            else
-                                cur->error[X_AXIS] += curd_errupd;
-                            if(curd->dir & Y_DIRPOS)
-                                cur->startYStep();
-                            else
-                                cur->error[Y_AXIS] += curd_errupd;
-                            if(curd->dir & Z_DIRPOS)
-                                cur->startZStep();
-                            else
-                                cur->error[Z_AXIS] += curd_errupd;
-                            Printer::zBabystepsMissing--;
-                        }
-                        else
-                        {
-                            if(curd->dir & X_DIRPOS)
-                                cur->error[X_AXIS] += curd_errupd;
-                            else
-                                cur->startXStep();
-                            if(curd->dir & Y_DIRPOS)
-                                cur->error[Y_AXIS] += curd_errupd;
-                            else
-                                cur->startYStep();
-                            if(curd->dir & Z_DIRPOS)
-                                cur->error[Z_AXIS] += curd_errupd;
-                            else
-                                cur->startZStep();
-                            Printer::zBabystepsMissing++;
-                        }
-                        HAL::delayMicroseconds(1);
-                        */
-                    }
                 }
                 else
                     curd = 0;// Release the last segment
@@ -2197,7 +2181,7 @@ int32_t PrintLine::bresenhamStep() // Version for delta printer
         //deltaSegmentCount -= cur->numDeltaSegments; // should always be zero
         removeCurrentLineForbidInterrupt();
         Printer::disableAllowedStepper();
-        if(linesCount == 0) UI_STATUS(UI_TEXT_IDLE);
+        if(linesCount == 0) UI_STATUS_F(Com::translatedF(UI_TEXT_IDLE_ID));
         Printer::interval >>= 1; // 50% of time to next call to do cur=0
         DEBUG_MEMORY;
     } // Do even
@@ -2478,7 +2462,7 @@ int32_t PrintLine::bresenhamStep() // version for cartesian printer
 #endif
         removeCurrentLineForbidInterrupt();
         Printer::disableAllowedStepper();
-        if(linesCount == 0) UI_STATUS(UI_TEXT_IDLE);
+        if(linesCount == 0) UI_STATUS_F(Com::translatedF(UI_TEXT_IDLE_ID));
         interval = Printer::interval = interval >> 1; // 50% of time to next call to do cur=0
         DEBUG_MEMORY;
     } // Do even
