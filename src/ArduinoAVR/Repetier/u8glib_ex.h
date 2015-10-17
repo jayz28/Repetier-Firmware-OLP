@@ -1036,14 +1036,14 @@ typedef void (*u8g_state_cb)(uint8_t msg);
 /* PI = Pin Index */
 
 /* reset pin, usually optional */
-#define U8G_PI_RESET 0
+#define U8G_PI_RESET 5 // olp uses line 5
 
 /* address / data or instruction */
 #define U8G_PI_A0 1
 #define U8G_PI_DI 1
 
 /* chip select line */
-#define U8G_PI_CS 2
+#define U8G_PI_CS 6 //2 // olp uses line 6
 #define U8G_PI_CS1 2
 #define U8G_PI_CS2 3
 /* Feb 2013: A0 state moved from 7 to 3 for t6963 controller*/
@@ -7721,7 +7721,7 @@ uint8_t u8g_com_arduino_ssd_i2c_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, voi
 
     case U8G_COM_MSG_RESET:
       /* Currently disabled, but it could be enable. Previous restrictions have been removed */
-      /* u8g_com_arduino_digital_write(u8g, U8G_PI_RESET, arg_val); */
+      u8g_com_arduino_digital_write(u8g, U8G_PI_RESET, arg_val); 
       break;
 
     case U8G_COM_MSG_CHIP_SELECT:

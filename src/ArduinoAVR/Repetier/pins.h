@@ -2490,6 +2490,96 @@ S3(ext)=9
 #endif
 
 
+#if MOTHERBOARD == 720
+#define KNOWN_BOARD
+/*****************************************************************
+* Ultimaker pin assignment
+******************************************************************/
+
+#define LARGE_FLASH true
+#define ORIG_X_STEP_PIN 25
+#define ORIG_X_DIR_PIN 23
+#define ORIG_X_MIN_PIN -1
+#define ORIG_X_MAX_PIN 24
+#define ORIG_X_ENABLE_PIN 27
+
+#define ORIG_Y_STEP_PIN 31
+#define ORIG_Y_DIR_PIN 33
+#define ORIG_Y_MIN_PIN -1
+#define ORIG_Y_MAX_PIN 28
+#define ORIG_Y_ENABLE_PIN 29
+
+#define ORIG_Z_STEP_PIN 37
+#define ORIG_Z_DIR_PIN 39
+#define ORIG_Z_MIN_PIN -1
+#define ORIG_Z_MAX_PIN 32
+#define ORIG_Z_ENABLE_PIN 35
+
+#define HEATER_3_PIN 4 // this is the bed 
+#define TEMP_3_PIN 10
+
+#define HEATER_0_PIN 2 // extruder 1
+#define TEMP_0_PIN 8
+
+#define HEATER_1_PIN 3 // extruder 2
+#define TEMP_1_PIN 9
+
+#define HEATER_2_PIN -1
+#define TEMP_2_PIN -1
+
+#define VotageDetectionPin 11
+#define PowerCheckPin 34
+
+#define ORIG_E0_STEP_PIN         43
+#define ORIG_E0_DIR_PIN          45
+#define ORIG_E0_ENABLE_PIN       41
+
+#define ORIG_E1_STEP_PIN         49
+#define ORIG_E1_DIR_PIN          47
+#define ORIG_E1_ENABLE_PIN       48
+
+#define SDPOWER            -1
+#define SDSS               53
+#define LED_PIN            13
+#define ORIG_FAN_PIN            7
+
+#define PS_ON_PIN          -1
+#define KILL_PIN           -1
+#define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+
+#ifdef NewPower
+#define SLEEP_PIN 12
+#endif
+
+// buttons defined in uiconfig
+//#ifdef PushButton
+//#define PushButtonUp  17
+////#define PushButtonDown  42
+////#define PushButtonEnter 40
+//
+//#define PushButtonDown  19
+//#define PushButtonEnter 16
+//#endif
+
+// pin 46 has been repurposed to the Z probe
+//#ifdef FilamentDetection
+//#define FilamentDetectionPin 46
+//#endif
+
+#define BatteryPin 26
+
+#define SDCARDDETECT 38
+
+#define BEEPER -1
+
+#define APPROACH_PIN 11
+#define GATE_PIN 36
+
+#endif
+
+
+
+
 #if MOTHERBOARD == 999
 #define KNOWN_BOARD
 #include "userpins.h"
