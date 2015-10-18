@@ -666,9 +666,9 @@ Value is used for all generic tables created. */
 // set to 0 if you don't have a heated bed
 #define HEATED_BED_SENSOR_TYPE 1
 /** Analog pin of analog sensor to read temperature of heated bed.  */
-#define HEATED_BED_SENSOR_PIN TEMP_1_PIN
+#define HEATED_BED_SENSOR_PIN TEMP_3_PIN
 /** \brief Pin to enable heater for bed. */
-#define HEATED_BED_HEATER_PIN HEATER_1_PIN
+#define HEATED_BED_HEATER_PIN HEATER_3_PIN
 // How often the temperature of the heated bed is set (msec)
 #define HEATED_BED_SET_INTERVAL 5000
 
