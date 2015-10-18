@@ -101,7 +101,7 @@ What display type do you use?
 #define UI_DISPLAY_TYPE 5
 
 #if UI_DISPLAY_TYPE == DISPLAY_U8G // Special case for graphic displays
-
+#define ARDUINO
 // You need to define which controller you use and set pins accodringly
 
 // For software spi assign these definitions
