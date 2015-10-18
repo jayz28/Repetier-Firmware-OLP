@@ -247,7 +247,7 @@ Overridden if EEPROM activated.*/
 // 100 is AD595
 // 101 is MAX6675
 // 102 is MAX31855
-#define EXT0_TEMPSENSOR_TYPE 13 // use E3D PT100 settings for now.  OLP is PT100 with INA826 compatible AMP
+#define EXT0_TEMPSENSOR_TYPE 100 // use AD595 settings for now.  OLP is PT100 with INA826 compatible AMP
 // Analog input pin for reading temperatures or pin enabling SS for MAX6675
 #define EXT0_TEMPSENSOR_PIN TEMP_0_PIN
 // Which pin enables the heater
@@ -1404,8 +1404,8 @@ Always hard to say since the other angle is 89° in this case!
 #ifndef SDSUPPORT  // Some boards have sd support on board. These define the values already in pins.h
 #define SDSUPPORT true
 // Uncomment to enable or change card detection pin. With card detection the card is mounted on insertion.
-#undef SDCARDDETECT
-#define SDCARDDETECT 1
+//#undef SDCARDDETECT
+//#define SDCARDDETECT 1
 // Change to true if you get a inserted message on removal.
 #define SDCARDDETECTINVERTED false
 #endif
@@ -1497,7 +1497,7 @@ computations, so do not enable it if your display works stable!
 #define UI_PAGES_DURATION 4000
 
 /** Delay of start screen in milliseconds */
-#define UI_START_SCREEN_DELAY 1000
+#define UI_START_SCREEN_DELAY 15000
 /** Uncomment if you don't want automatic page switching. You can still switch the
 info pages with next/previous button/click-encoder */
 #define UI_DISABLE_AUTO_PAGESWITCH 1
