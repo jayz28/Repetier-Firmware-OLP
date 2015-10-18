@@ -2534,18 +2534,26 @@ S3(ext)=9
 #define ORIG_E0_DIR_PIN          45
 #define ORIG_E0_ENABLE_PIN       41
 
+#define E0_PINS ORIG_E0_STEP_PIN,ORIG_E0_DIR_PIN,ORIG_E0_ENABLE_PIN,
+
 #define ORIG_E1_STEP_PIN         49
 #define ORIG_E1_DIR_PIN          47
 #define ORIG_E1_ENABLE_PIN       48
+
+#define E1_PINS ORIG_E1_STEP_PIN,ORIG_E1_DIR_PIN,ORIG_E1_ENABLE_PIN,
 
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            13
 #define ORIG_FAN_PIN            7
 
-#define PS_ON_PIN          -1
+#define ORIG_PS_ON_PIN          12
 #define KILL_PIN           -1
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+
+#define SCK_PIN          52
+#define MISO_PIN         50
+#define MOSI_PIN         51
 
 #ifdef NewPower
 #define SLEEP_PIN 12
@@ -2672,6 +2680,6 @@ S3(ext)=9
 #define SENSITIVE_PINS {0, 1, ORIG_X_STEP_PIN, ORIG_X_DIR_PIN, ORIG_X_ENABLE_PIN, ORIG_X_MIN_PIN, ORIG_X_MAX_PIN, \
         ORIG_Y_STEP_PIN, ORIG_Y_DIR_PIN, ORIG_Y_ENABLE_PIN, ORIG_Y_MIN_PIN, ORIG_Y_MAX_PIN, ORIG_Z_STEP_PIN,\
         ORIG_Z_DIR_PIN, ORIG_Z_ENABLE_PIN, ORIG_Z_MIN_PIN, ORIG_Z_MAX_PIN, LED_PIN, ORIG_PS_ON_PIN, \
-        HEATER_0_PIN, HEATER_1_PIN, /*ORIG_FAN_PIN,*/ E0_PINS E1_PINS E2_PINS TEMP_0_PIN, TEMP_1_PIN,SDSS }
+        HEATER_0_PIN, HEATER_1_PIN, ORIG_FAN_PIN, E0_PINS E1_PINS E2_PINS TEMP_0_PIN, TEMP_1_PIN,SDSS }
 #endif
 
