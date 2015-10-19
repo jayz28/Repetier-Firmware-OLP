@@ -1,4 +1,18 @@
+# Repetier-Firmware Dream Maker Overlord Pro 3D Printer
+
+This is a work in progress to replace the stock UM Marlin derived firmware on the [http://www.dreammaker.cc/](Dream Maker Overlord Pro)
+ with a Repetier derived firmware. 
+ 
+ ## Improvements
+ Along with the improvements inherent in a Repetier, the SEN header on the HOST card (pin 46) has been repurposed as a z-probe input.
+
+ ## TODO:
+	Get SSD1309 OLED working reliably
+	Enable case lights
+	Enable buzzer
+
 # Repetier-Firmware - the fast and user friendly firmware
+
 
 ## Installation
 
