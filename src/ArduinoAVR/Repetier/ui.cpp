@@ -782,7 +782,7 @@ void initializeLCD()
     u8g_InitSPI(&u8g,&u8g_dev_ssd1306_128x64_sw_spi,  UI_DISPLAY_D4_PIN, UI_DISPLAY_ENABLE_PIN, UI_DISPLAY_RS_PIN, U8G_PIN_NONE, U8G_PIN_NONE);
 #endif
 #ifdef U8GLIB_SSD1309_I2C
-	u8g_InitI2C(&u8g,&u8g_dev_ssd1309_128x64_i2c,U8G_I2C_OPT_NO_ACK);
+	u8g_InitI2C(&u8g,&u8g_dev_ssd1309_128x64_i2c,U8G_I2C_OPT_DEV_0 & U8G_I2C_OPT_NO_ACK & U8G_I2C_OPT_FAST);
 #endif
 #ifdef U8GLIB_KS0108_FAST
     u8g_Init8Bit(&u8g,&u8g_dev_ks0108_128x64_fast,UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN,UI_DISPLAY_ENABLE_PIN,UI_DISPLAY_CS1,UI_DISPLAY_CS2,
@@ -891,7 +891,7 @@ void UIDisplay::initialize()
 #if defined(USER_KEY4_PIN) && USER_KEY4_PIN > -1
     UI_KEYS_INIT_BUTTON_LOW(USER_KEY4_PIN);
 #endif
-#if UI_DISPLAY_TYPE == DISPLAY_I2C
+#if UI_DISPLAY_TYPE == DISPLAY_I2C 
     // I don't know why but after power up the lcd does not come up
     // but if I reinitialize i2c and the lcd again here it works.
     HAL::delayMilliseconds(10);

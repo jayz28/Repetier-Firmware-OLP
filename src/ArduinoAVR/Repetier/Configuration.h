@@ -1101,7 +1101,7 @@ Overridden if EEPROM activated.
 This number of moves can be cached in advance. If you wan't to cache more, increase this. Especially on
 many very short moves the cache may go empty. The minimum value is 5.
 */
-#define PRINTLINE_CACHE_SIZE 16
+#define PRINTLINE_CACHE_SIZE 20
 
 /** \brief Low filled cache size.
 
@@ -1486,7 +1486,7 @@ computations, so do not enable it if your display works stable!
 //#define TRY_AUTOREPAIR_LCD_ERRORS
 
 // This is line 2 of the status display at startup. Change to your like.
-#define UI_PRINTER_NAME "DreamMaker Overlord Pro"
+#define UI_PRINTER_NAME "Overlord Pro"
 #define UI_PRINTER_COMPANY "DFRobot"
 
 
@@ -1497,7 +1497,7 @@ computations, so do not enable it if your display works stable!
 #define UI_PAGES_DURATION 4000
 
 /** Delay of start screen in milliseconds */
-#define UI_START_SCREEN_DELAY 15000
+#define UI_START_SCREEN_DELAY 1000
 /** Uncomment if you don't want automatic page switching. You can still switch the
 info pages with next/previous button/click-encoder */
 #define UI_DISABLE_AUTO_PAGESWITCH 1

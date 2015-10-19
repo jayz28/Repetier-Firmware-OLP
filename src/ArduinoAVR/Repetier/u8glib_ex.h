@@ -162,6 +162,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* comment the following line to generate more compact but interrupt unsafe code */
 #define U8G_INTERRUPT_SAFE 1
 
+// explicit defines for ease of debug, not necessary
+#define ARDUINO 10605 
+#define __AVR__
 
 #include <stddef.h>
 
