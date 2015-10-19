@@ -1,6 +1,6 @@
 # Repetier-Firmware Dream Maker Overlord Pro 3D Printer
 
-This is a work in progress to replace the stock UM Marlin derived firmware on the [http://www.dreammaker.cc/](Dream Maker Overlord Pro) 
+This is a work in progress to replace the stock UM Marlin derived firmware on the Dream Maker Overlord Pro [http://www.dreammaker.cc] 
 with a Repetier derived firmware. 
  
 ## Improvements
