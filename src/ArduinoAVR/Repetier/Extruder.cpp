@@ -252,6 +252,14 @@ void Extruder::manageTemperatures()
         if(act->currentTemperatureC > MAXTEMP) // Force heater off if MAXTEMP is exceeded
             output = 0;
 #endif
+		if (controller == 0)
+		{
+			output *= EXT0_MAX_PWM;
+		}
+		else if (controller == 1)
+		{
+			output *= EXT1_MAX_PWM;
+		}
         pwm_pos[act->pwmIndex] = output; // set pwm signal
 #if LED_PIN > -1
         if(act == &Extruder::current->tempControl)
