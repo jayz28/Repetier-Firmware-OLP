@@ -252,14 +252,20 @@ void Extruder::manageTemperatures()
         if(act->currentTemperatureC > MAXTEMP) // Force heater off if MAXTEMP is exceeded
             output = 0;
 #endif
-		if (controller == 0)
+		// limit PMW if we are not a bed controller, to support stock 12V or 19V heaters
+		if (act != &heatedBedController)
 		{
-			output *= EXT0_MAX_PWM;
+			if (controller == 0)
+			{
+				output *= EXT0_MAX_PWM;
+			}
+			else if (controller == 1)
+			{
+				output *= EXT1_MAX_PWM;
+			}
 		}
-		else if (controller == 1)
-		{
-			output *= EXT1_MAX_PWM;
-		}
+
+		
         pwm_pos[act->pwmIndex] = output; // set pwm signal
 #if LED_PIN > -1
         if(act == &Extruder::current->tempControl)
