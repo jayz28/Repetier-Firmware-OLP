@@ -344,12 +344,13 @@ The codes are only executed for multiple extruder when changing the extruder. */
 /** Pullup resistor for jam pin? */
 #define EXT0_JAM_PULLUP false
 
+#define EXT0_MAX_PWM 0.63 // maximum pwm duty cycle for the stock 19V heaters  
 // =========================== Configuration for second extruder ========================
 #define EXT1_X_OFFSET 0
 #define EXT1_Y_OFFSET 0
 #define EXT1_Z_OFFSET 0
 // for skeinforge 40 and later, steps to pull the plasic 1 mm inside the extruder, not out.  Overridden if EEPROM activated.
-#define EXT1_STEPS_PER_MM 373
+#define EXT1_STEPS_PER_MM 67
 // What type of sensor is used?
 // 0 is no thermistor/temperature control
 // 1 is 100k thermistor (Epcos B57560G0107F000 - RepRap-Fab.org and many other)
@@ -457,6 +458,8 @@ cog. Direct drive extruder need 0. */
 #define EXT1_JAM_PIN -1
 /** Pullup resistor for jam pin? */
 #define EXT1_JAM_PULLUP false
+
+#define EXT1_MAX_PWM 0.63
 
 /** If enabled you can select the distance your filament gets retracted during a
 M140 command, after a given temperature is reached. */
@@ -800,9 +803,9 @@ on this endstop.
 #define max_software_endstop_z false
 
 // If during homing the endstop is reached, ho many mm should the printer move back for the second try
-#define ENDSTOP_X_BACK_MOVE 5
-#define ENDSTOP_Y_BACK_MOVE 5
-#define ENDSTOP_Z_BACK_MOVE 5
+#define ENDSTOP_X_BACK_MOVE 15
+#define ENDSTOP_Y_BACK_MOVE 15
+#define ENDSTOP_Z_BACK_MOVE 15
 
 // For higher precision you can reduce the speed for the second test on the endstop
 // during homing operation. The homing speed is divided by the value. 1 = same speed, 2 = half speed
@@ -1497,7 +1500,7 @@ computations, so do not enable it if your display works stable!
 #define UI_PAGES_DURATION 4000
 
 /** Delay of start screen in milliseconds */
-#define UI_START_SCREEN_DELAY 1000
+#define UI_START_SCREEN_DELAY 5000
 /** Uncomment if you don't want automatic page switching. You can still switch the
 info pages with next/previous button/click-encoder */
 #define UI_DISABLE_AUTO_PAGESWITCH 1
@@ -1529,7 +1532,7 @@ same setting.
 
 
 /** \brief bounce time of keys in milliseconds */
-#define UI_KEY_BOUNCETIME 10
+#define UI_KEY_BOUNCETIME 5
 
 /** \brief First time in ms until repeat of action. */
 #define UI_KEY_FIRST_REPEAT 500

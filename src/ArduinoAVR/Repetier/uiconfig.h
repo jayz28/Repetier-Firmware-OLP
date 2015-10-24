@@ -114,8 +114,9 @@ What display type do you use?
 // SSD1306 with software SPI
 //#define U8GLIB_SSD1306_SW_SPI
 // SSD1306 over I2C using hardware I2C pins
-//#define U8GLIB_SSD1306_I2C  // OLP is actually an SSD1309 on I2C
-#define U8GLIB_SSD1309_I2C  // OLP is actually an SSD1309 on I2C
+//#define U8GLIB_SSD1306_I2C  
+// #define U8GLIB_SSD1309_I2C  
+#define U8GLIB_SH1106_I2C // after further investigation, it seems the OLP is actually an SH1106 
 // For the 8 bit ks0108 display you need to set these pins
 // UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN
 // UI_DISPLAY_ENABLE_PIN,UI_DISPLAY_CS1,UI_DISPLAY_CS2,

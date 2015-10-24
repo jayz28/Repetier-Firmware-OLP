@@ -784,6 +784,21 @@ void initializeLCD()
 #ifdef U8GLIB_SSD1309_I2C
 	u8g_InitI2C(&u8g,&u8g_dev_ssd1309_128x64_i2c,U8G_I2C_OPT_DEV_0 & U8G_I2C_OPT_NO_ACK & U8G_I2C_OPT_FAST);
 #endif
+
+#ifdef U8GLIB_SH1106_I2C
+	// custom init sequence for the OLP OLED display
+	HAL::pinMode(U8G_PI_RESET, 0x1);
+	HAL::pinMode(U8G_PI_CS, 0x1);
+	HAL::digitalWrite(U8G_PI_CS, 1);
+	// reset line 5
+	HAL::digitalWrite(U8G_PI_RESET, 0);
+	HAL::delayMilliseconds(5);
+	HAL::digitalWrite(U8G_PI_RESET, 1);
+	HAL::delayMilliseconds(5);
+	HAL::delayMicroseconds(200);
+
+	u8g_InitI2C(&u8g,&u8g_dev_sh1106_128x64_i2c,U8G_I2C_OPT_FAST);
+#endif
 #ifdef U8GLIB_KS0108_FAST
     u8g_Init8Bit(&u8g,&u8g_dev_ks0108_128x64_fast,UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN,UI_DISPLAY_ENABLE_PIN,UI_DISPLAY_CS1,UI_DISPLAY_CS2,
                  UI_DISPLAY_DI,UI_DISPLAY_RW_PIN,UI_DISPLAY_RESET_PIN);
