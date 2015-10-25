@@ -1138,7 +1138,7 @@ void Printer::deltaMoveToTopEndstops(float feedrate)
     Printer::stepsRemainingAtZHit = -1;
     setHoming(true);
     transformCartesianStepsToDeltaSteps(currentPositionSteps, currentDeltaPositionSteps);
-    PrintLine::moveRelativeDistanceInSteps(0, 0, zMaxSteps * 2.0, 0, feedrate, true, true);
+    PrintLine::moveRelativeDistanceInSteps(0, 0, zMaxSteps * 3.0, 0, feedrate, true, true);
     offsetX = offsetY = offsetZ = 0;
     setHoming(false);
 }
@@ -1190,6 +1190,7 @@ void Printer::homeZAxis() // Delta z homing
 					// Check for missing release of any (XYZ) endstop
 					if (Endstops::xMax() || Endstops::yMax() || Endstops::zMax()) {
 						homingSuccess = false; // Reset success flag
+						Com::printFLN(PSTR("Homing failed From Missing Release"));
 					}
 				}
 #endif
