@@ -798,6 +798,16 @@ void initializeLCD()
 	HAL::delayMicroseconds(200);
 
 	u8g_InitI2C(&u8g,&u8g_dev_sh1106_128x64_i2c,U8G_I2C_OPT_FAST);
+	
+	u8g_i2c_init(U8G_I2C_OPT_FAST);
+	u8g_i2c_start((0x60 << 1) | I2C_WRITE);
+	u8g_i2c_send_byte(0x02);
+	u8g_i2c_send_byte(0xFF);
+	u8g_i2c_send_byte(0x03);
+	u8g_i2c_send_byte(0xFF);
+	u8g_i2c_send_byte(0x04);
+	u8g_i2c_send_byte(0xFF);
+	u8g_i2c_stop();
 #endif
 #ifdef U8GLIB_KS0108_FAST
     u8g_Init8Bit(&u8g,&u8g_dev_ks0108_128x64_fast,UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN,UI_DISPLAY_ENABLE_PIN,UI_DISPLAY_CS1,UI_DISPLAY_CS2,
