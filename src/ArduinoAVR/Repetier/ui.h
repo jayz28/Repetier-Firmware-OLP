@@ -601,6 +601,8 @@ class UIDisplay {
 #endif
     char cwd[SD_MAX_FOLDER_DEPTH*LONG_FILENAME_LENGTH+2];
     uint8_t folderLevel;
+	static void rgbLED(uint8_t red, uint8_t green, uint8_t blue);
+	static void beep(uint8_t type);
 };
 extern UIDisplay uid;
 

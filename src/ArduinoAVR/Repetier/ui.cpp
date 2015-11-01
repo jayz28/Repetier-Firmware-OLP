@@ -800,14 +800,9 @@ void initializeLCD()
 	u8g_InitI2C(&u8g,&u8g_dev_sh1106_128x64_i2c,U8G_I2C_OPT_FAST);
 	
 	u8g_i2c_init(U8G_I2C_OPT_FAST);
-	u8g_i2c_start((0x60 << 1) | I2C_WRITE);
-	u8g_i2c_send_byte(0x02);
-	u8g_i2c_send_byte(0xFF);
-	u8g_i2c_send_byte(0x03);
-	u8g_i2c_send_byte(0xFF);
-	u8g_i2c_send_byte(0x04);
-	u8g_i2c_send_byte(0xFF);
-	u8g_i2c_stop();
+	
+	UIDisplay::rgbLED(0x0F, 0xFF, 0x0F);
+
 #endif
 #ifdef U8GLIB_KS0108_FAST
     u8g_Init8Bit(&u8g,&u8g_dev_ks0108_128x64_fast,UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN,UI_DISPLAY_ENABLE_PIN,UI_DISPLAY_CS1,UI_DISPLAY_CS2,
@@ -1007,6 +1002,29 @@ void  UIDisplay::waitForKey()
         uiCheckSlowKeys(nextAction);
     }
 }
+
+void UIDisplay::rgbLED(uint8_t red, uint8_t green, uint8_t blue)
+{
+	u8g_i2c_start((0x60 << 1) | I2C_WRITE);
+	u8g_i2c_send_byte(0x02);
+	u8g_i2c_send_byte(green);
+	u8g_i2c_send_byte(0x03);
+	u8g_i2c_send_byte(red);
+	u8g_i2c_send_byte(0x04);
+	u8g_i2c_send_byte(blue);
+	u8g_i2c_stop();
+
+}
+
+void UIDisplay::beep(uint8_t type)
+{
+	u8g_i2c_start((0x60 << 1) | I2C_WRITE);
+	u8g_i2c_send_byte(0x09);
+	u8g_i2c_send_byte(type);
+	u8g_i2c_stop();
+
+}
+
 
 void UIDisplay::printRowP(uint8_t r,PGM_P txt)
 {
@@ -1318,7 +1336,7 @@ void UIDisplay::parse(const char *txt,bool ram)
             if(Printer::isAnyTempsensorDefect())
             {
                 if(eid == 0 && ++beepdelay > 30) beepdelay = 0; // beep every 30 seconds
-                if(beepdelay == 1) BEEP_LONG;
+                if(beepdelay == 1) beep(0x00);
                 if(tempController[eid]->isSensorDefect())
                 {
                     addStringP(PSTR(" def "));
@@ -1693,8 +1711,11 @@ void UIDisplay::setStatusP(PGM_P txt,bool error)
         statusMsg[i++] = c;
     }
     statusMsg[i]=0;
-    if(error)
-        Printer::setUIErrorMessage(true);
+	if (error) {
+		Printer::setUIErrorMessage(true);
+		UIDisplay::rgbLED(0xFF, 0x20, 0x20);
+	}
+        
 }
 void UIDisplay::setStatus(const char *txt,bool error)
 {
@@ -1703,8 +1724,12 @@ void UIDisplay::setStatus(const char *txt,bool error)
     while(*txt && i<20)
         statusMsg[i++] = *txt++;
     statusMsg[i]=0;
-    if(error)
-        Printer::setUIErrorMessage(true);
+	if (error)
+	{
+		Printer::setUIErrorMessage(true);
+		UIDisplay::rgbLED(0xFF, 0x20, 0x20);
+	}
+        
 }
 
 const UIMenu * const ui_pages[UI_NUM_PAGES] PROGMEM = UI_PAGES;
@@ -2266,7 +2291,7 @@ int UIDisplay::okAction(bool allowMoves)
         Printer::setUIErrorMessage(false);
         return 0;
     }
-    BEEP_SHORT
+	beep(0x02);
 #if UI_HAS_KEYS == 1
     if(menuLevel == 0)   // Enter menu
     {
@@ -2326,7 +2351,7 @@ int UIDisplay::okAction(bool allowMoves)
             if (sd.selectFile(filename, false))
             {
                 sd.startPrint();
-                BEEP_LONG;
+                beep(0x00);
                 menuLevel = 0;
             }
             break;
@@ -2338,7 +2363,7 @@ int UIDisplay::okAction(bool allowMoves)
                 if(sd.fat.remove(filename))
                 {
                     Com::printFLN(Com::tFileDeleted);
-                    BEEP_LONG
+					beep(0x00);
                     if(menuPos[menuLevel] > 0)
                         menuPos[menuLevel]--;
                     updateSDFileCount();
@@ -3180,13 +3205,13 @@ int UIDisplay::executeAction(int action, bool allowMoves)
         case UI_ACTION_STORE_EEPROM:
             EEPROM::storeDataIntoEEPROM(false);
             pushMenu(&ui_menu_eeprom_saved, false);
-            BEEP_LONG;
+            beep(0x00);
             break;
         case UI_ACTION_LOAD_EEPROM:
             EEPROM::readDataFromEEPROM(true);
             Extruder::selectExtruderById(Extruder::current->id);
             pushMenu(&ui_menu_eeprom_loaded, false);
-            BEEP_LONG;
+            beep(0x00);
             break;
 #endif
 #if SDSUPPORT
@@ -3352,7 +3377,7 @@ int UIDisplay::executeAction(int action, bool allowMoves)
             Printer::setJamcontrolDisabled(true);
             Com::printFLN(PSTR("important: Filament change required!"));
             Printer::setBlockingReceive(true);
-            BEEP_LONG;
+            beep(0x00);
             pushMenu(&ui_wiz_filamentchange, true);
             Printer::resetWizardStack();
             Printer::pushWizardVar(Printer::currentPositionSteps[E_AXIS]);
@@ -3657,7 +3682,7 @@ void UIDisplay::slowAction(bool allowMoves)
         if(encodeChange) // encoder changed
         {
             nextPreviousAction(encodeChange, allowMoves);
-            BEEP_SHORT
+			beep(0x02);
             refresh = 1;
         }
         if(lastAction != lastButtonAction)
@@ -3673,7 +3698,7 @@ void UIDisplay::slowAction(bool allowMoves)
             else if(time - lastButtonStart > UI_KEY_BOUNCETIME)     // New key pressed
             {
                 lastAction = lastButtonAction;
-                BEEP_SHORT
+				beep(0x02);
                 if((newAction = executeAction(lastAction, allowMoves)) == 0)
                 {
                     nextRepeat = time + UI_KEY_FIRST_REPEAT;
@@ -3697,7 +3722,7 @@ void UIDisplay::slowAction(bool allowMoves)
                 repeatDuration -= UI_KEY_REDUCE_REPEAT;
                 if(repeatDuration < UI_KEY_MIN_REPEAT) repeatDuration = UI_KEY_MIN_REPEAT;
                 nextRepeat = time + repeatDuration;
-                BEEP_SHORT
+				beep(0x02);
             }
         }
         noInts.protect();
