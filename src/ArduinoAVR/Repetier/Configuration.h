@@ -248,7 +248,7 @@ Overridden if EEPROM activated.*/
 // 100 is AD595
 // 101 is MAX6675
 // 102 is MAX31855
-#define EXT0_TEMPSENSOR_TYPE 100 // use AD595 settings for now.  OLP is PT100 with INA826 compatible AMP
+#define EXT0_TEMPSENSOR_TYPE 50 // Use PTC user temptable copied from OLP firmware. OLP is PT100 with INA826 compatible AMP
 // Analog input pin for reading temperatures or pin enabling SS for MAX6675
 #define EXT0_TEMPSENSOR_PIN TEMP_0_PIN
 // Which pin enables the heater
@@ -372,7 +372,7 @@ The codes are only executed for multiple extruder when changing the extruder. */
 // 99 Generic thermistor table 3
 // 100 is AD595
 // 101 is MAX6675
-#define EXT1_TEMPSENSOR_TYPE 100
+#define EXT1_TEMPSENSOR_TYPE 50
 // Analog input pin for reading temperatures or pin enabling SS for MAX6675
 #define EXT1_TEMPSENSOR_PIN TEMP_2_PIN
 // Which pin enables the heater
@@ -572,11 +572,35 @@ temperature*8.
 If you have a PTC thermistor instead of a NTC thermistor, keep the adc values increasing and use themistor types 50-52 instead of 5-7!
 */
 /** Number of entries in the user thermistor table 0. Set to 0 to disable it. */
-#define NUM_TEMPS_USERTHERMISTOR0 28
+#define NUM_TEMPS_USERTHERMISTOR0 23
 #define USER_THERMISTORTABLE0  {\
+	{ 0, 0 },\
+	{ 103, 1 },\
+	{ 340, 7 },\
+	{ 477, 15 },\
+	{ 660, 21 },\
+	{ 961, 28 },\
+	{ 1260, 36 },\
+	{ 2300, 62 },\
+	{ 4384, 110 },\
+	{ 4771, 120 },\
+	{ 5141, 130 },\
+	{ 5525, 140 },\
+	{ 5865, 150 },\
+	{ 6261, 160 },\
+	{ 6629, 170 },\
+	{ 7014, 180 },\
+	{ 7361, 190 },\
+	{ 7729, 200 },\
+	{ 8082, 210 },\
+	{ 8451, 220 },\
+	{ 8769, 230 },\
+	{ 9159, 240 },\
+	{ 18493, 500 }};
+/*{\
   {1*4,864*8},{21*4,300*8},{25*4,290*8},{29*4,280*8},{33*4,270*8},{39*4,260*8},{46*4,250*8},{54*4,240*8},{64*4,230*8},{75*4,220*8},\
   {90*4,210*8},{107*4,200*8},{128*4,190*8},{154*4,180*8},{184*4,170*8},{221*4,160*8},{265*4,150*8},{316*4,140*8},{375*4,130*8},\
-  {441*4,120*8},{513*4,110*8},{588*4,100*8},{734*4,80*8},{856*4,60*8},{938*4,40*8},{986*4,20*8},{1008*4,0*8},{1018*4,-20*8}	}
+  {441*4,120*8},{513*4,110*8},{588*4,100*8},{734*4,80*8},{856*4,60*8},{938*4,40*8},{986*4,20*8},{1008*4,0*8},{1018*4,-20*8}	}*/
 
 /** Number of entries in the user thermistor table 1. Set to 0 to disable it. */
 #define NUM_TEMPS_USERTHERMISTOR1 0
