@@ -102,7 +102,7 @@ What display type do you use?
 
 #if UI_DISPLAY_TYPE == DISPLAY_U8G // Special case for graphic displays
 
-// You need to define which controller you use and set pins accodringly
+// You need to define which controller you use and set pins accordingly
 
 // For software spi assign these definitions
 // SCK Pin:  UI_DISPLAY_D4_PIN
@@ -113,7 +113,10 @@ What display type do you use?
 #define U8GLIB_ST7920
 // SSD1306 with software SPI
 //#define U8GLIB_SSD1306_SW_SPI
+// SH1106 with software SPI
+// U8GLIB_SH1106_SW_SPI
 // SSD1306 over I2C using hardware I2C pins
+// #define U8GLIB_MINI12864_2X_SW_SPI
 //#define U8GLIB_SSD1306_I2C
 // For the 8 bit ks0108 display you need to set these pins
 // UI_DISPLAY_D0_PIN,UI_DISPLAY_D1_PIN,UI_DISPLAY_D2_PIN,UI_DISPLAY_D3_PIN,UI_DISPLAY_D4_PIN,UI_DISPLAY_D5_PIN,UI_DISPLAY_D6_PIN,UI_DISPLAY_D7_PIN
@@ -137,12 +140,12 @@ What display type do you use?
 #define UI_FONT_DEFAULT repetier_6x10
 #define UI_FONT_SMALL repetier_5x7
 #define UI_FONT_SMALL_WIDTH 5 //smaller font for status display
-#define UI_ANIMATION false  // Animations are too slow
 #endif
 
 //calculate rows and cols available with current font
 #define UI_COLS (UI_LCD_WIDTH/UI_FONT_WIDTH)
 #define UI_ROWS (UI_LCD_HEIGHT/UI_FONT_HEIGHT)
+#undef UI_DISPLAY_CHARSET
 #define UI_DISPLAY_CHARSET 3
 #else
 /** Number of columns per row
@@ -241,7 +244,8 @@ Define the pin
 0 = No keys attached - disables also menu
 1 = Some keys attached
 */
-#define UI_HAS_KEYS 0
+#undef UI_HAS_KEYS
+#define UI_HAS_KEYS 1
 
 
 /** \brief Is a back key present.
@@ -358,7 +362,7 @@ Type 3: Show menu action. These actions have a _MENU_ in their name. If they are
 // Define your matrix actions
 #define UI_MATRIX_ACTIONS {UI_ACTION_HOME_ALL, UI_ACTION_TOP_MENU,       UI_ACTION_SET_ORIGIN,      UI_ACTION_NEXT,\
                            UI_ACTION_HOME_Z,   UI_ACTION_MENU_ZPOS,      UI_ACTION_COOLDOWN,        UI_ACTION_OK,\
-                           UI_ACTION_HOME_Y,   UI_ACTION_MENU_YPOSFAST,  UI_ACTION_PREHEAT_ABS,     UI_ACTION_PREVIOUS,\
+                           UI_ACTION_HOME_Y,   UI_ACTION_MENU_YPOSFAST,  UI_ACTION_PREHEAT_ALL,     UI_ACTION_PREVIOUS,\
                            UI_ACTION_HOME_X,   UI_ACTION_MENU_XPOSFAST,  UI_ACTION_DISABLE_STEPPER, UI_ACTION_BACK}
 #ifdef UI_MATRIX_ACTIONS
 const int matrixActions[] PROGMEM = UI_MATRIX_ACTIONS;
@@ -378,7 +382,7 @@ void uiInitKeys() {
 //  UI_KEYS_INIT_MATRIX(32,47,45,43,41,39,37,35);
 #endif
 }
-void uiCheckKeys(int &action) {
+void uiCheckKeys(uint16_t &action) {
 #if UI_HAS_KEYS!=0
 
  //UI_KEYS_CLICKENCODER_LOW_REV(33,31); // click encoder on pins 47 and 45. Phase is connected with gnd for signals.
@@ -402,7 +406,7 @@ inline void uiCheckSlowEncoder() {
     HAL::i2cWrite(0x12); // GIOA
     HAL::i2cStop();
     HAL::i2cStartWait(UI_DISPLAY_I2C_ADDRESS+I2C_READ);
-    unsigned int keymask = HAL::i2cReadAck();
+    uint16_t keymask = HAL::i2cReadAck();
     keymask = keymask + (HAL::i2cReadNak()<<8);
 #endif
   HAL::i2cStop();
@@ -410,7 +414,7 @@ inline void uiCheckSlowEncoder() {
   UI_KEYS_I2C_CLICKENCODER_LOW_REV(_BV(2),_BV(0)); // click encoder on pins 0 and 2. Phase is connected with gnd for signals.
 #endif
 }
-void uiCheckSlowKeys(int &action) {
+void uiCheckSlowKeys(uint16_t &action) {
 #if defined(UI_HAS_I2C_KEYS) && UI_HAS_KEYS!=0
 #if UI_DISPLAY_I2C_CHIPTYPE==0
     HAL::i2cStartWait(UI_I2C_KEY_ADDRESS+I2C_READ);
@@ -421,7 +425,7 @@ void uiCheckSlowKeys(int &action) {
     HAL::i2cWrite(0x12); // GPIOA
     HAL::i2cStop();
     HAL::i2cStartWait(UI_DISPLAY_I2C_ADDRESS+I2C_READ);
-    unsigned int keymask = HAL::i2cReadAck();
+    uint16_t keymask = HAL::i2cReadAck();
     keymask = keymask + (HAL::i2cReadNak()<<8);
 #endif
     HAL::i2cStop();

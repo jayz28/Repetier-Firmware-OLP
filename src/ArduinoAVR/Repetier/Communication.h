@@ -22,6 +22,50 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+#ifndef MAX_DATA_SOURCES
+#define MAX_DATA_SOURCES 4
+#endif
+
+/** This class defines the general interface to handle gcode communication with the firmware. This
+allows it to connect to different data sources and handle them all inside the same data structure.
+If several readers are active, the first one sending a byte pauses all other inputs until the command
+is complete. Only then the next reader will be queried. New queries are started in round robin fashion
+so every channel gets the same chance to send commands.
+
+Available source types are:
+- serial communication port
+- sd card
+- flash memory
+*/
+class GCodeSource {
+    static fast8_t numSources; ///< Number of data sources available
+    static fast8_t numWriteSources;
+    static GCodeSource *sources[MAX_DATA_SOURCES];
+    static GCodeSource *writeableSources[MAX_DATA_SOURCES];
+    public:
+    static GCodeSource *activeSource;
+    static void registerSource(GCodeSource *newSource);
+    static void removeSource(GCodeSource *delSource);
+    static void rotateSource(); ///< Move active to next source
+    static void writeToAll(uint8_t byte); ///< Write to all listening sources
+    static void printAllFLN(FSTRINGPARAM(text) );
+    static void printAllFLN(FSTRINGPARAM(text), int32_t v);
+    uint32_t lastLineNumber;
+    uint8_t wasLastCommandReceivedAsBinary; ///< Was the last successful command in binary mode?
+    millis_t timeOfLastDataPacket;
+    int8_t waitingForResend; ///< Waiting for line to be resend. -1 = no wait.
+
+    GCodeSource();
+    virtual ~GCodeSource() {}
+    virtual bool isOpen() = 0;
+    virtual bool supportsWrite() = 0; ///< true if write is a non dummy function
+    virtual bool closeOnError() = 0; // return true if the channel can not interactively correct errors.
+    virtual bool dataAvailable() = 0; // would read return a new byte?
+    virtual int readByte() = 0;
+    virtual void close() = 0;
+    virtual void writeByte(uint8_t byte) = 0;
+};
+
 class Com
 {
     public:
@@ -36,6 +80,7 @@ FSTRINGVAR(tInfo)
 FSTRINGVAR(tWarning)
 FSTRINGVAR(tResend)
 FSTRINGVAR(tEcho)
+FSTRINGVAR(tCap)
 FSTRINGVAR(tOkSpace)
 FSTRINGVAR(tWrongChecksum)
 FSTRINGVAR(tMissingChecksum)
@@ -51,6 +96,14 @@ FSTRINGVAR(tP)
 FSTRINGVAR(tI)
 FSTRINGVAR(tJ)
 FSTRINGVAR(tR)
+FSTRINGVAR(tD)
+FSTRINGVAR(tC)
+FSTRINGVAR(tH)
+FSTRINGVAR(tA)
+FSTRINGVAR(tB)
+FSTRINGVAR(tK)
+FSTRINGVAR(tL)
+FSTRINGVAR(tO)
 FSTRINGVAR(tSDReadError)
 FSTRINGVAR(tExpectedLine)
 FSTRINGVAR(tGot)
@@ -67,6 +120,21 @@ FSTRINGVAR(tFreeRAM)
 FSTRINGVAR(tXColon)
 FSTRINGVAR(tSlash)
 FSTRINGVAR(tSpaceSlash)
+FSTRINGVAR(tFatal)
+FSTRINGVAR(tDoorOpen)
+#if JSON_OUTPUT
+FSTRINGVAR(tJSONDir)
+FSTRINGVAR(tJSONFiles)
+FSTRINGVAR(tJSONArrayEnd)
+FSTRINGVAR(tJSONErrorStart)
+FSTRINGVAR(tJSONErrorEnd)
+FSTRINGVAR(tJSONFileInfoStart)
+FSTRINGVAR(tJSONFileInfoHeight)
+FSTRINGVAR(tJSONFileInfoLayerHeight)
+FSTRINGVAR(tJSONFileInfoFilament)
+FSTRINGVAR(tJSONFileInfoGeneratedBy)
+FSTRINGVAR(tJSONFileInfoName)
+#endif
 FSTRINGVAR(tSpaceXColon)
 FSTRINGVAR(tSpaceYColon)
 FSTRINGVAR(tSpaceZColon)
@@ -82,6 +150,7 @@ FSTRINGVAR(tColon)
 FSTRINGVAR(tSpeedMultiply)
 FSTRINGVAR(tFlowMultiply)
 FSTRINGVAR(tFanspeed)
+FSTRINGVAR(tFan2speed)
 FSTRINGVAR(tPrintedFilament)
 FSTRINGVAR(tPrintingTime)
 FSTRINGVAR(tSpacem)
@@ -120,13 +189,16 @@ FSTRINGVAR(tEEPROMUpdated)
 FSTRINGVAR(tFilamentSlipping)
 FSTRINGVAR(tPauseCommunication)
 FSTRINGVAR(tContinueCommunication)
+#if NONLINEAR_SYSTEM
+FSTRINGVAR(tInvalidDeltaCoordinate)
+FSTRINGVAR(tDBGDeltaNoMoveinDSegment)
+#endif
 #if DRIVE_SYSTEM == DELTA
 FSTRINGVAR(tMeasurementReset)
 FSTRINGVAR(tMeasureDeltaSteps)
 FSTRINGVAR(tMeasureDelta)
 FSTRINGVAR(tMeasureOriginReset)
 FSTRINGVAR(tMeasurementAbortedOrigin)
-FSTRINGVAR(tInvalidDeltaCoordinate)
 FSTRINGVAR(tLevelingCalc)
 FSTRINGVAR(tTower1)
 FSTRINGVAR(tTower2)
@@ -140,12 +212,9 @@ FSTRINGVAR(tDeltaRadiusCorrectionC)
 FSTRINGVAR(tDeltaDiagonalCorrectionA)
 FSTRINGVAR(tDeltaDiagonalCorrectionB)
 FSTRINGVAR(tDeltaDiagonalCorrectionC)
-FSTRINGVAR(tDBGDeltaNoMoveinDSegment)
 FSTRINGVAR(tEPRDeltaMaxRadius)
 #endif // DRIVE_SYSTEM
 #if DRIVE_SYSTEM==TUGA
-FSTRINGVAR(tInvalidDeltaCoordinate)
-FSTRINGVAR(tDBGDeltaNoMoveinDSegment)
 FSTRINGVAR(tEPRDiagonalRodLength)
 #endif
 #ifdef DEBUG_GENERIC
@@ -161,6 +230,10 @@ FSTRINGVAR(tAPIDMax)
 FSTRINGVAR(tAPIDKu)
 FSTRINGVAR(tAPIDTu)
 FSTRINGVAR(tAPIDClassic)
+FSTRINGVAR(tAPIDSome)
+FSTRINGVAR(tAPIDNone)
+FSTRINGVAR(tAPIDPessen)
+FSTRINGVAR(tAPIDTyreusLyben)
 FSTRINGVAR(tAPIDKp)
 FSTRINGVAR(tAPIDKi)
 FSTRINGVAR(tAPIDKd)
@@ -293,6 +366,9 @@ FSTRINGVAR(tEPRZHomingFeedrate)
 #if DRIVE_SYSTEM != DELTA
 FSTRINGVAR(tEPRMaxZJerk)
 FSTRINGVAR(tEPRXStepsPerMM)
+#if DUAL_X_RESOLUTION
+FSTRINGVAR(tEPRX2StepsPerMM)
+#endif
 FSTRINGVAR(tEPRYStepsPerMM)
 FSTRINGVAR(tEPRXMaxFeedrate)
 FSTRINGVAR(tEPRYMaxFeedrate)
@@ -305,8 +381,6 @@ FSTRINGVAR(tEPRYTravelAcceleration)
 #else
 FSTRINGVAR(tEPRDiagonalRodLength)
 FSTRINGVAR(tEPRHorizontalRadius)
-FSTRINGVAR(tEPRSegmentsPerSecondPrint)
-FSTRINGVAR(tEPRSegmentsPerSecondTravel)
 FSTRINGVAR(tEPRTowerXOffset)
 FSTRINGVAR(tEPRTowerYOffset)
 FSTRINGVAR(tEPRTowerZOffset)
@@ -345,6 +419,8 @@ FSTRINGVAR(tEPRDistanceRetractHeating)
 FSTRINGVAR(tEPRExtruderCoolerSpeed)
 FSTRINGVAR(tEPRAdvanceK)
 FSTRINGVAR(tEPRAdvanceL)
+FSTRINGVAR(tEPRPreheatTemp)
+FSTRINGVAR(tEPRPreheatBedTemp)
 #endif
 #if SDSUPPORT
 //FSTRINGVAR(tSDRemoved)
@@ -391,7 +467,22 @@ FSTRINGVAR(tExtrDot)
 FSTRINGVAR(tMCPEpromSettings)
 FSTRINGVAR(tMCPCurrentSettings)
 #endif
+FSTRINGVAR(tPrinterModeFFF)
+FSTRINGVAR(tPrinterModeLaser)
+FSTRINGVAR(tPrinterModeCNC)
+#ifdef STARTUP_GCODE
+FSTRINGVAR(tStartupGCode)
+#endif
+#if NONLINEAR_SYSTEM
+FSTRINGVAR(tEPRSegmentsPerSecondPrint)
+FSTRINGVAR(tEPRSegmentsPerSecondTravel)
+#endif
+#ifdef DRV_TMC2130
+FSTRINGVAR(tTrinamicMotorCurrent)
+FSTRINGVAR(tTrinamicMicrostepMode)
+#endif
 
+static void cap(FSTRINGPARAM(text));
 static void config(FSTRINGPARAM(text));
 static void config(FSTRINGPARAM(text),int value);
 static void config(FSTRINGPARAM(text),const char *msg);
@@ -423,11 +514,12 @@ static void print(long value);
 static inline void print(uint32_t value) {printNumber(value);}
 static inline void print(int value) {print((int32_t)value);}
 static void print(const char *text);
-static inline void print(char c) {HAL::serialWriteByte(c);}
+static inline void print(char c) {GCodeSource::writeToAll(c);}
 static void printFloat(float number, uint8_t digits);
 static inline void print(float number) {printFloat(number, 6);}
-static inline void println() {HAL::serialWriteByte('\r');HAL::serialWriteByte('\n');}
-#if UI_DISPLAY_TYPE != NO_DISPLAY
+static inline void println() {GCodeSource::writeToAll('\r');GCodeSource::writeToAll('\n');}
+static bool writeToAll;    
+#if FEATURE_CONTROLLER != NO_CONTROLLER
 static const char* translatedF(int textId);
 static void selectLanguage(fast8_t lang);
 static uint8_t selectedLanguage;

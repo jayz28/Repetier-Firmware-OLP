@@ -30,6 +30,11 @@
   all hardware related code should be packed into the hal files.
 */
 
+// You can set different sizes if you want, but with binary mode it does not get faster
+#ifndef SERIAL_RX_BUFFER_SIZE
+#define SERIAL_RX_BUFFER_SIZE 128
+#endif
+
 #ifndef HAL_H
 #define HAL_H
 
@@ -40,6 +45,7 @@
 
 // Hack to make 84 MHz Due clock work without changes to pre-existing code
 // which would otherwise have problems with int overflow.
+#undef F_CPU
 #define F_CPU       21000000        // should be factor of F_CPU_TRUE
 #define F_CPU_TRUE  84000000        // actual CPU clock frequency
 #define EEPROM_BYTES 4096  // bytes of eeprom we simulate
@@ -50,7 +56,9 @@
 #define SPR1    1
 
 // force SdFat to use HAL (whether or not using SW spi)
+#if MOTHERBOARD != 409 // special case ultratronics
 #undef  SOFTWARE_SPI
+#endif
 #define TIMER0_PRESCALE 128
 
 // Some structures assume no padding, need to add this attribute on ARM
@@ -62,13 +70,23 @@
 #define PROGMEM
 #define PGM_P const char *
 typedef char prog_char;
+#undef PSTR
 #define PSTR(s) s
+#undef pgm_read_byte_near
 #define pgm_read_byte_near(x) (*(int8_t*)x)
+#undef pgm_read_byte
 #define pgm_read_byte(x) (*(int8_t*)x)
+#undef pgm_read_float
 #define pgm_read_float(addr) (*(const float *)(addr))
-#define pgm_read_word(addr) (*(const unsigned int *)(addr))
+#undef pgm_read_word
+//#define pgm_read_word(addr) (*(const unsigned int *)(addr))
+#define pgm_read_word(addr) (*(addr))
+#undef pgm_read_word_near
 #define pgm_read_word_near(addr) pgm_read_word(addr)
-#define pgm_read_dword(addr) (*(const unsigned long *)(addr))
+#undef pgm_read_dword
+#define pgm_read_dword(addr) (*(addr))
+//#define pgm_read_dword(addr) (*(const unsigned long *)(addr))
+#undef pgm_read_dword_near
 #define pgm_read_dword_near(addr) pgm_read_dword(addr)
 #define _BV(x) (1 << (x))
 
@@ -114,7 +132,10 @@ typedef char prog_char;
 
 
 #define EXTRUDER_CLOCK_FREQ     60000 // extruder stepper interrupt frequency
-#define PWM_CLOCK_FREQ          3906
+// #define PWM_CLOCK_FREQ          3906
+// #define PWM_COUNTER_100MS       390
+#define PWM_CLOCK_FREQ          10000
+#define PWM_COUNTER_100MS       1000
 #define TIMER1_CLOCK_FREQ       244
 #define TIMER1_PRESCALE         2
 
@@ -131,7 +152,7 @@ typedef char prog_char;
 #define ADC_ISR_EOC(channel)    (0x1u << channel)
 #define ENABLED_ADC_CHANNELS    {TEMP_0_PIN, TEMP_1_PIN, TEMP_2_PIN}
 
-#define PULLUP(IO,v)            {pinMode(IO, (v!=LOW ? INPUT_PULLUP : INPUT)); }
+#define PULLUP(IO,v)            {::pinMode(IO, (v!=LOW ? INPUT_PULLUP : INPUT)); }
 
 // INTERVAL / (32Khz/128)  = seconds
 #define WATCHDOG_INTERVAL       1024u  // 8sec  (~16 seconds max)
@@ -154,13 +175,17 @@ typedef char prog_char;
 #define		_WRITE(port, v)			do { if (v) {DIO ##  port ## _PORT -> PIO_SODR = DIO ## port ## _PIN; } else {DIO ##  port ## _PORT->PIO_CODR = DIO ## port ## _PIN; }; } while (0)
 #define WRITE(pin,v) _WRITE(pin,v)
 
-#define	SET_INPUT(pin) pmc_enable_periph_clk(g_APinDescription[pin].ulPeripheralId); \
-  PIO_Configure(g_APinDescription[pin].pPort, PIO_INPUT, g_APinDescription[pin].ulPin, 0)
-#define	SET_OUTPUT(pin) PIO_Configure(g_APinDescription[pin].pPort, PIO_OUTPUT_1, \
-                                      g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
+#define	SET_INPUT(pin) ::pinMode(pin,INPUT); 
+// pmc_enable_periph_clk(g_APinDescription[pin].ulPeripheralId); 
+//  PIO_Configure(g_APinDescription[pin].pPort, PIO_INPUT, g_APinDescription[pin].ulPin, 0)
+#define	SET_OUTPUT(pin) ::pinMode(pin,OUTPUT);
+//PIO_Configure(g_APinDescription[pin].pPort, PIO_OUTPUT_1, 
+//                                      g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
 #define TOGGLE(pin) WRITE(pin,!READ(pin))
 #define TOGGLE_VAR(pin) HAL::digitalWrite(pin,!HAL::digitalRead(pin))
+#undef LOW
 #define LOW         0
+#undef HIGH
 #define HIGH        1
 
 // Protects a variable scope for interrupts. Uses RAII to force clearance of
@@ -238,7 +263,7 @@ extern int spiDueDividors[];
 
 static uint32_t    tone_pin;
 
-/** Set max. frequency to 150000Hz */
+/** Set max. frequency to 500000 Hz */
 #define LIMIT_INTERVAL (F_CPU/500000)
 
 
@@ -266,6 +291,7 @@ typedef unsigned int ufast8_t;
 #elif BLUETOOTH_SERIAL == 101
 #define BT_SERIAL SerialUSB
 #endif
+#define RFSERIAL2 BT_SERIAL
 
 class RFDoubleSerial : public Print
 {
@@ -284,29 +310,17 @@ extern RFDoubleSerial BTAdapter;
 
 #endif
 
-
-#define OUT_P_I(p,i) //Com::printF(PSTR(p),(int)(i))
-#define OUT_P_I_LN(p,i) //Com::printFLN(PSTR(p),(int)(i))
-#define OUT_P_L(p,i) //Com::printF(PSTR(p),(long)(i))
-#define OUT_P_L_LN(p,i) //Com::printFLN(PSTR(p),(long)(i))
-#define OUT_P_F(p,i) //Com::printF(PSTR(p),(float)(i))
-#define OUT_P_F_LN(p,i) //Com::printFLN(PSTR(p),(float)(i))
-#define OUT_P_FX(p,i,x) //Com::printF(PSTR(p),(float)(i),x)
-#define OUT_P_FX_LN(p,i,x) //Com::printFLN(PSTR(p),(float)(i),x)
-#define OUT_P(p) //Com::printF(PSTR(p))
-#define OUT_P_LN(p) //Com::printFLN(PSTR(p))
-#define OUT_ERROR_P(p) //Com::printErrorF(PSTR(p))
-#define OUT_ERROR_P_LN(p) {//Com::printErrorF(PSTR(p));//Com::println();}
-#define OUT(v) //Com::print(v)
-#define OUT_LN //Com::println()
-
 union eeval_t {
-  uint8_t     b[];
+  uint8_t     b[4];
   float       f;
   uint32_t    i;
   uint16_t    s;
   long        l;
 } PACK;
+
+#if EEPROM_AVAILABLE == EEPROM_SDCARD
+extern millis_t eprSyncTime;
+#endif
 
 class HAL
 {
@@ -319,6 +333,14 @@ class HAL
     HAL();
     virtual ~HAL();
 
+    // Try to initialize pinNumber as hardware PWM. Returns internal
+    // id if it succeeds or -1 if it fails. Typical reasons to fail
+    // are no pwm support for that pin or an other pin uses same PWM
+    // channel.
+    static int initHardwarePWM(int pinNumber, uint32_t frequency);
+    // Set pwm output to value. id is id from initHardwarePWM.
+    static void setHardwarePWM(int id, int value);
+
     // do any hardware-specific initialization here
     static inline void hwSetup(void)
     {
@@ -327,7 +349,9 @@ class HAL
         WDT_Disable(WDT);
       #endif
   
-      HAL::i2cInit(TWI_CLOCK_FREQ);
+      #if EEPROM_AVAILABLE == EEPROM_I2C || UI_DISPLAY_TYPE == 3 //init i2c when EEprom installed or using i2c display
+      HAL::i2cInit(TWI_CLOCK_FREQ); 
+      #endif
       // make debugging startup easier
       //Serial.begin(115200);
       TimeTick_Configure(F_CPU_TRUE);
@@ -339,15 +363,15 @@ class HAL
       TC_Start(DELAY_TIMER, DELAY_TIMER_CHANNEL);
 #if EEPROM_AVAILABLE && EEPROM_MODE != EEPROM_NONE
       // Copy eeprom to ram for faster access
-      int i, n = EEPROM_BYTES;
+      int i;
       for (i = 0; i < EEPROM_BYTES; i += 4) {
         eeval_t v = eprGetValue(i, 4);
-        *(int*)(&virtualEeprom[i]) = v.i;
+        memcopy4(&virtualEeprom[i],&v.i);
       }
 #else
-      int i, n = EEPROM_BYTES;
+      int i,n = 0;
       for (i = 0; i < EEPROM_BYTES; i += 4) {
-        *(int*)(&virtualEeprom[i]) = 0;
+        memcopy4(&virtualEeprom[i],&n);
       }
 #endif
     }
@@ -441,6 +465,11 @@ class HAL
       WRITE_VAR(pin, LOW);
     }
 
+#if EEPROM_AVAILABLE == EEPROM_SDCARD
+    static void syncEEPROM(); // store to disk if changed
+    static void importEEPROM();
+#endif
+
     static inline void eprSetByte(unsigned int pos, uint8_t value)
     {
       eeval_t v;
@@ -448,64 +477,60 @@ class HAL
       eprBurnValue(pos, 1, v);
       *(uint8_t*)&virtualEeprom[pos] = value;
     }
-    static inline void eprSetInt16(unsigned int pos, int value)
+    static inline void eprSetInt16(unsigned int pos, int16_t value)
     {
       eeval_t v;
       v.s = value;
       eprBurnValue(pos, 2, v);
-      *(uint16_t*)&virtualEeprom[pos] = value;
+      memcopy2(&virtualEeprom[pos],&value);
     }
-    static inline void eprSetInt32(unsigned int pos, int value)
+    static inline void eprSetInt32(unsigned int pos, int32_t value)
     {
       eeval_t v;
       v.i = value;
       eprBurnValue(pos, 4, v);
-      *(int*)&virtualEeprom[pos] = value;
+      memcopy4(&virtualEeprom[pos],&value);
     }
     static inline void eprSetLong(unsigned int pos, long value)
     {
       eeval_t v;
       v.l = value;
       eprBurnValue(pos, sizeof(long), v);
-      *(long*)&virtualEeprom[pos] = value;
+      memcopy4(&virtualEeprom[pos],&value);
     }
     static inline void eprSetFloat(unsigned int pos, float value)
     {
       eeval_t v;
       v.f = value;
       eprBurnValue(pos, sizeof(float), v);
-      *(float*)&virtualEeprom[pos] = value;
+      memcopy4(&virtualEeprom[pos],&value);
     }
     static inline uint8_t eprGetByte(unsigned int pos)
     {
       return *(uint8_t*)&virtualEeprom[pos];
-      //eeval_t v = eprGetValue(pos,1);
-      //return v.b[0];
     }
     static inline int16_t eprGetInt16(unsigned int pos)
     {
-      return *(int16_t*)&virtualEeprom[pos];
-      //eeval_t v;
-      //v.i = 0;
-      //v = eprGetValue(pos, 2);
-      //return v.i;
+      int16_t v;
+      memcopy2(&v,&virtualEeprom[pos]);
+      return v;
     }
-    static inline int eprGetInt32(unsigned int pos)
+    static inline int32_t eprGetInt32(unsigned int pos)
     {
-      return *(int*)&virtualEeprom[pos];
-      //eeval_t v = eprGetValue(pos, 4);
-      //return v.i;
+      int32_t v;
+      memcopy4(&v,&virtualEeprom[pos]);
+      return v;
     }
     static inline long eprGetLong(unsigned int pos)
     {
-      return *(long*)&virtualEeprom[pos];
-      //eeval_t v = eprGetValue(pos, sizeof(long));
-      //return v.l;
+      int32_t v;
+      memcopy4(&v,&virtualEeprom[pos]);
+      return v;
     }
     static inline float eprGetFloat(unsigned int pos) {
-      return *(float*)&virtualEeprom[pos];
-      //eeval_t v = eprGetValue(pos, sizeof(float));
-      //return v.f;
+      float v;
+      memcopy4(&v,&virtualEeprom[pos]);
+      return v;
     }
 
     // Write any data type to EEPROM
@@ -555,7 +580,7 @@ class HAL
       delayMilliseconds(EEPROM_PAGE_WRITE_TIME);   // wait for page write to complete
 #elif EEPROM_AVAILABLE == EEPROM_I2C
       i2cStartAddr(EEPROM_SERIAL_ADDR << 1 | I2C_WRITE, pos);
-      i2cWriting(newvalue.b[0]);        // write first byte
+      i2cWrite(newvalue.b[0]);        // write first byte
       for (int i = 1; i < size; i++) {
         pos++;
         // writes cannot cross page boundary
@@ -565,13 +590,15 @@ class HAL
           delayMilliseconds(EEPROM_PAGE_WRITE_TIME);
           i2cStartAddr(EEPROM_SERIAL_ADDR << 1, pos);
         } else {
-          i2cTxFinished();      // wait for transmission register to empty
+         while ( (TWI_INTERFACE->TWI_SR & TWI_SR_TXRDY) != TWI_SR_TXRDY);// wait for transmission register to empty
         }
-        i2cWriting(newvalue.b[i]);
+        i2cWrite(newvalue.b[i]);
       }
       i2cStop();          // signal end of transaction
       delayMilliseconds(EEPROM_PAGE_WRITE_TIME);   // wait for page write to complete
-#endif//(MOTHERBOARD==500) || (MOTHERBOARD==501)
+#elif EEPROM_AVAILABLE == EEPROM_SDCARD
+      eprSyncTime = HAL::timeInMilliseconds() | 1UL; 
+#endif
     }
 
     // Read any data type from EEPROM that was previously written by eprBurnValue
@@ -606,8 +633,6 @@ class HAL
       size--;
       // set read location
       i2cStartAddr(EEPROM_SERIAL_ADDR << 1 | I2C_READ, pos);
-      // begin transmission from device
-      i2cStartBit();
       for (i = 0; i < size; i++) {
         // read an incomming byte
         v.b[i] = i2cReadAck();
@@ -615,7 +640,15 @@ class HAL
       // read last byte
       v.b[i] = i2cReadNak();
       return v;
-#endif //(MOTHERBOARD==500) || (MOTHERBOARD==501)
+#else
+     eeval_t v;
+     int i;
+     for (i = 0; i < size; i++) {
+        // read an incomming byte
+        v.b[i] = 0;
+     }
+     return v;       
+#endif //(MOTHERBOARD==500) || (MOTHERBOARD==501) || (MOTHERBOARD==502)
     }
 
     static inline void allowInterrupts()
@@ -634,8 +667,14 @@ class HAL
     {
       return pgm_read_byte(ptr);
     }
+    static inline int16_t readFlashWord(PGM_P ptr)
+    {
+        return pgm_read_word(ptr);
+    }
+
     static inline void serialSetBaudrate(long baud)
     {
+      Serial.setInterruptPriority(1);
 #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
       BTAdapter.begin(baud);
 #else
@@ -705,10 +744,14 @@ class HAL
       }
       return b;
     }
-    static inline void spiBegin()
+    static inline void spiBegin(uint8_t ssPin = 0)
     {
-      SET_OUTPUT(SDSS);
-      WRITE(SDSS, HIGH);
+     	if (ssPin) {
+			   HAL::digitalWrite(ssPin, 0);
+		  } else {
+        SET_OUTPUT(SDSS);
+        WRITE(SDSS, HIGH);
+      }
       SET_OUTPUT(SCK_PIN);
       SET_INPUT(MISO_PIN);
       SET_OUTPUT(MOSI_PIN);
@@ -720,67 +763,64 @@ class HAL
       WRITE(MOSI_PIN, HIGH);
       WRITE(SCK_PIN, LOW);
     }
-    static inline uint8_t spiReceive()
+    static inline uint8_t spiReceive(uint8_t send=0xff)
     {
-      WRITE(SDSS, LOW);
-      uint8_t b = spiTransfer(0xff);
-      WRITE(SDSS, HIGH);
+      // WRITE(SDSS, LOW);
+      uint8_t b = spiTransfer(send);
+      // WRITE(SDSS, HIGH);
       return b;
     }
     static inline void spiReadBlock(uint8_t*buf, uint16_t nbyte)
     {
       if (nbyte == 0) return;
-      WRITE(SDSS, LOW);
+      // WRITE(SDSS, LOW);
       for (int i = 0; i < nbyte; i++)
       {
         buf[i] = spiTransfer(0xff);
       }
-      WRITE(SDSS, HIGH);
+      // WRITE(SDSS, HIGH);
 
     }
     static inline void spiSend(uint8_t b) {
-      WRITE(SDSS, LOW);
+      // WRITE(SDSS, LOW);
       uint8_t response = spiTransfer(b);
-      WRITE(SDSS, HIGH);
+      // WRITE(SDSS, HIGH);
     }
 
     static inline void spiSend(const uint8_t* buf , size_t n)
     {
-      uint8_t response;
       if (n == 0) return;
-      WRITE(SDSS, LOW);
+      // WRITE(SDSS, LOW);
       for (uint16_t i = 0; i < n; i++) {
-        response = spiTransfer(buf[i]);
+        spiTransfer(buf[i]);
       }
-      WRITE(SDSS, HIGH);
+      // WRITE(SDSS, HIGH);
     }
 
     inline __attribute__((always_inline))
     static void spiSendBlock(uint8_t token, const uint8_t* buf)
     {
-      uint8_t response;
-
-      WRITE(SDSS, LOW);
-      response = spiTransfer(token);
+      // WRITE(SDSS, LOW);
+      spiTransfer(token);
 
       for (uint16_t i = 0; i < 512; i++)
       {
-        response = spiTransfer(buf[i]);
+        spiTransfer(buf[i]);
       }
-      WRITE(SDSS, HIGH);
+      // WRITE(SDSS, HIGH);
     }
 
 #else
 
     // hardware SPI
-    static void spiBegin();
+    static void spiBegin(uint8_t ssPin = 0);
     // spiClock is 0 to 6, relecting AVR clock dividers 2,4,8,16,32,64,128
     // Due can only go as slow as AVR divider 32 -- slowest Due clock is 329,412 Hz
     static void spiInit(uint8_t spiClock);
     // Write single byte to SPI
     static void spiSend(byte b);
     static void spiSend(const uint8_t* buf , size_t n);
-#if MOTHERBOARD == 500 || MOTHERBOARD == 501
+#if MOTHERBOARD == 500 || MOTHERBOARD == 501 || MOTHERBOARD==502
     static void spiSend(uint32_t chan , const uint8_t* buf , size_t n);
     static void spiSend(uint32_t chan, byte b);
     static uint8_t spiReceive(uint32_t chan);
@@ -796,24 +836,29 @@ class HAL
 #endif  /*DUE_SOFTWARE_SPI*/
 
     // I2C Support
+    static void i2cSetClockspeed(uint32_t clockSpeedHz);
     static void i2cInit(unsigned long clockSpeedHz);
     static void i2cStartWait(unsigned char address);
-    static unsigned char i2cStart(unsigned char address);
+    static uint8_t i2cStart(unsigned char address);
     static void i2cStartAddr(unsigned char address, unsigned int pos);
     static void i2cStop(void);
     static void i2cStartBit(void);
     static void i2cCompleted (void);
     static void i2cTxFinished(void);
-    static void i2cWriting( uint8_t data );
-    static unsigned char i2cWrite( unsigned char data );
-    static unsigned char i2cReadAck(void);
-    static unsigned char i2cReadNak(void);
+    static void i2cWrite( uint8_t data );
+    static uint8_t i2cReadAck(void);
+    static uint8_t i2cReadNak(void);
 
 
     // Watchdog support
     inline static void startWatchdog() {
+      //WDT->WDT_MR = WDT_MR_WDRSTEN | WATCHDOG_INTERVAL | 0x0fff0000; //(WATCHDOG_INTERVAL << 16);
+      //WDT->WDT_CR = 0xA5000001;      
+      WDT->WDT_CR = 0xA5000001; //reset clock before updating WDD
+      delayMicroseconds(92); //must wait a minimum of 3 slow clocks before updating WDT_MR after writing WDT_CR
       WDT->WDT_MR = WDT_MR_WDRSTEN | WATCHDOG_INTERVAL | (WATCHDOG_INTERVAL << 16);
       WDT->WDT_CR = 0xA5000001;
+      
     };
     inline static void stopWatchdog() {}
     inline static void pingWatchdog() {
@@ -830,9 +875,7 @@ class HAL
     static void servoMicroseconds(uint8_t servo, int ms, uint16_t autoOff);
 #endif
 
-#if ANALOG_INPUTS > 0
     static void analogStart(void);
-#endif
 #if USE_ADVANCE
     static void resetExtruderDirection();
 #endif
