@@ -21,6 +21,8 @@ which based on Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
 #ifndef RF_DISPLAY
 #define RF_DISPLAY
 
+#define UI_FONT_DEFAULT_RU ISO_6x10
+#define UI_FONT_SMALL_RU ISO_5x7
 
 #if FEATURE_CONTROLLER == UICONFIG_CONTROLLER
 #include "uiconfig.h"
@@ -298,7 +300,7 @@ void uiCheckSlowKeys(uint16_t &action) {}
 #undef SDCARDDETECTINVERTED
 #define SDCARDDETECTINVERTED   0
 
-#elif MOTHERBOARD == 414 // RURAMPS4D
+#elif ( MOTHERBOARD == 414 ) || ( MOTHERBOARD == 415 ) // RURAMPS4D
 
 #undef BEEPER_PIN
 #define BEEPER_PIN        62
@@ -318,6 +320,75 @@ void uiCheckSlowKeys(uint16_t &action) {}
 #define UI_ENCODER_CLICK 40
 #define UI_RESET_PIN -1
 #define UI_INVERT_MENU_DIRECTION 1
+
+#elif MOTHERBOARD == 402 // RADDS with RADDS2LCD Adapter 
+// https://www.thingiverse.com/thing:1740725/files
+#define BEEPER_TYPE 1
+#undef BEEPER_PIN
+#define BEEPER_PIN             41
+#define UI_DISPLAY_RS_PIN      42
+#define UI_DISPLAY_RW_PIN      -1
+#define UI_DISPLAY_ENABLE_PIN  43
+#define UI_DISPLAY_D0_PIN      44
+#define UI_DISPLAY_D1_PIN      45
+#define UI_DISPLAY_D2_PIN      46
+#define UI_DISPLAY_D3_PIN      47
+#define UI_DISPLAY_D4_PIN      44
+#define UI_DISPLAY_D5_PIN      45
+#define UI_DISPLAY_D6_PIN      46
+#define UI_DISPLAY_D7_PIN      47
+
+// swap these two numbers to invert rotary encoder scroll direction
+#define UI_ENCODER_A           50
+#define UI_ENCODER_B           52
+
+#define UI_ENCODER_CLICK       48
+#define UI_RESET_PIN           -1
+#define UI_DELAYPERCHAR 50
+#define UI_INVERT_MENU_DIRECTION 0
+#define UI_BUTTON_BACK         71
+
+#elif MOTHERBOARD == 403 || MOTHERBOARD == 404
+
+ // ramps-fd lcd adaptor needs to rotate connectors 180° to work!
+#define UI_DISPLAY_RS_PIN         16
+#define UI_DISPLAY_ENABLE_PIN     17
+#define UI_DISPLAY_D4_PIN         23
+#define UI_DISPLAY_D5_PIN         25
+#define UI_DISPLAY_D6_PIN         27
+#define UI_DISPLAY_D7_PIN         29
+#define BEEPER_PIN                37
+#define UI_ENCODER_A              33
+#define UI_ENCODER_B              31
+#define UI_ENCODER_CLICK          35
+#define UI_RESET_PIN              -1
+#define UI_DELAYPERCHAR 50
+#define UI_INVERT_MENU_DIRECTION   0
+#define UI_BUTTON_BACK            -1
+#undef SDCARDDETECT
+#define SDCARDDETECT           49
+#undef SDCARDDETECTINVERTED
+#define SDCARDDETECTINVERTED   0
+#undef SDSUPPORT
+#define SDSUPPORT              1
+
+#elif MOTHERBOARD == 408 || MOTHERBOARD == 413
+
+// SMART RAMPS FOR DUE - CRITICAL NOTE: MUST REMOVE THE RESET HEADER JUMPER NEXT TO AUX-2 OTHERWISE BOARD WILL RESET LOOP CONTINUOUSLY
+#define UI_DISPLAY_RS_PIN         44 //CS
+#define UI_DISPLAY_ENABLE_PIN     42 //MOSI
+#define UI_DISPLAY_D4_PIN         40 //SCK
+#define UI_DISPLAY_D5_PIN         -1 //A0 LCD RS
+#define UI_DISPLAY_D6_PIN         -1
+#define UI_DISPLAY_D7_PIN         -1
+#define BEEPER_PIN                66
+#define UI_ENCODER_A              50
+#define UI_ENCODER_B              47
+#define UI_ENCODER_CLICK          67
+#define UI_RESET_PIN              53
+#define UI_DELAYPERCHAR           50
+#define UI_INVERT_MENU_DIRECTION   0
+#define UI_BUTTON_BACK            -1
 
 #else  // RAMPS
 
@@ -1515,7 +1586,7 @@ void uiCheckSlowKeys(uint16_t &action) {}
 #endif
 #endif // Controller VIKI 2
 
-#if FEATURE_CONTROLLER == CONTROLLER_AZSMZ_12864
+#if FEATURE_CONTROLLER == CONTROLLER_AZSMZ_12864 || FEATURE_CONTROLLER == CONTROLLER_AZSMZ_12864_OLED
 #define UI_HAS_KEYS 1
 #define UI_HAS_BACK_KEY 0
 #define UI_DISPLAY_TYPE DISPLAY_U8G
@@ -1543,7 +1614,11 @@ void uiCheckSlowKeys(uint16_t &action) {}
 #define UI_ENCODER_SPEED 2
 //#define SDCARDDETECT        -1
 //#define UI_DISPLAY_RW_PIN -1
+#if FEATURE_CONTROLLER == CONTROLLER_AZSMZ_12864
 #define UI_ROTATE_180
+#endif
+
+
 
 #define BEEPER_TYPE 1
 
@@ -1555,6 +1630,7 @@ void uiCheckSlowKeys(uint16_t &action) {}
 
 #undef SDCARDDETECT
 #define SDCARDDETECT 49 // sd card detect as shown on drawing
+
 
 #undef BEEPER_PIN
 #define BEEPER_PIN         66
@@ -1587,7 +1663,7 @@ void uiInitKeys() {
     #endif
 }
 void uiCheckKeys(uint16_t &action) {
-    UI_KEYS_CLICKENCODER_LOW_REV(UI_ENCODER_B, UI_ENCODER_A);
+    UI_KEYS_CLICKENCODER_LOW_REV(UI_ENCODER_A, UI_ENCODER_B);
     UI_KEYS_BUTTON_LOW(UI_ENCODER_CLICK, UI_ACTION_OK);
     #if UI_RESET_PIN > -1
     UI_KEYS_BUTTON_LOW(UI_RESET_PIN, UI_ACTION_RESET);
@@ -1852,6 +1928,7 @@ inline void uiCheckSlowKeys(uint16_t &action) {}
 
 
 extern void beep(uint8_t duration, uint8_t count);
+#ifdef UI_MAIN
 #if (defined(USER_KEY1_PIN) && USER_KEY1_PIN > -1 && defined(USER_KEY1_ACTION)) || (defined(USER_KEY2_PIN) && USER_KEY2_PIN > -1 && defined(USER_KEY2_ACTION)) || (defined(USER_KEY3_PIN) && USER_KEY3_PIN > -1 && defined(USER_KEY3_ACTION)) || (defined(USER_KEY4_PIN) && USER_KEY4_PIN > -1 && defined(USER_KEY4_ACTION))
 #define HAS_USER_KEYS
 static void ui_check_Ukeys(uint16_t &action) {
@@ -1869,6 +1946,6 @@ static void ui_check_Ukeys(uint16_t &action) {
     #endif
 }
 #endif
-
+#endif
 
 #endif
