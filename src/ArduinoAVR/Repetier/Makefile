@@ -32,7 +32,7 @@
 #
 # $Id$
 
-ARDUINO_TAG?=1.0.5
+ARDUINO_TAG?=1.8.8
 #TARGET = $(notdir $(CURDIR))
 FORMAT:=ihex
 TARGET = Repetier

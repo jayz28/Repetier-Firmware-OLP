@@ -1139,8 +1139,8 @@ on this endstop.
 
 // Delta settings
 #if DRIVE_SYSTEM == DELTA
-/** \brief Delta rod length (mm)
 #define DELTA_DIAGONAL_ROD 206 // mm  
+/** \brief Delta rod length (mm)
 
 /*  =========== Parameter essential for delta calibration ===================
 
