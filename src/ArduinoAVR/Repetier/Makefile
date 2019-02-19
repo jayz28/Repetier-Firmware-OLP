@@ -42,7 +42,7 @@ PDEFILE=$(TARGET).ino
 AVRDUDE_PROGRAMMER = stk500v2
 #AVRDUDE_PROGRAMMER = 2232HIO
 #PORT = COM10
-PORT?=/dev/ttyUSB4
+PORT?=/dev/ttyUSB0
 MCU = atmega2560
 #For "old" Arduino Mega
 #MCU = atmega1280

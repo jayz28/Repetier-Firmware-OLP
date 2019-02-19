@@ -1948,7 +1948,7 @@ case!
 
 /** Set to false to disable SD support: */
 #ifndef SDSUPPORT  // Some boards have sd support on board. These define the values already in pins.h
-#define SDSUPPORT true
+#define SDSUPPORT false 
 // Uncomment to enable or change card detection pin. With card detection the card is mounted on insertion.
 //#undef SDCARDDETECT
 //#define SDCARDDETECT 1
@@ -2059,7 +2059,7 @@ CONTROLLER_FELIX_DUE Felix LCD für due based board 27 or
 CONTROLLER_REPRAPWORLD_GLCD = ReprapWorld Graphical LCD
 */
 
-#define FEATURE_CONTROLLER UICONFIG_CONTROLLER
+#define FEATURE_CONTROLLER  0 //UICONFIG_CONTROLLER
 
 /* You can have one keypad connected via single analog pin as seen on
  some printers with Melzi V2.0 board, 20x4 LCD and 5 buttons keypad. This must

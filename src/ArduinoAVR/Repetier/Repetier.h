@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <HardwareSerial.h>
 
 #define REPETIER_VERSION "1.0.4"
 
